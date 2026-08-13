@@ -1,64 +1,41 @@
-name: Skinz-Ultra-Lightweight-Linux
+name: Skinz-Windows-RDP-Fixed
 
 on: 
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-      - name: 1. Install Desktop Environment & VNC Core
+      - name: 1. Download and Extract Ngrok
         run: |
-          sudo apt update
-          # تثبيت واجهة XFCE الخفيفة جداً مع خادم VNC مدمج
-          sudo apt install xfce4 xfce4-goodies tightvncserver git chromium-browser python3 python3-pip -y
-          
-          # إعداد خادم الـ VNC بكلمة مرور افتراضية صامتة
-          mkdir -p ~/.vnc
-          echo "King123" | vncpasswd -f > ~/.vnc/passwd
-          chmod 600 ~/.vnc/passwd
-          
-          # ضبط الواجهة الرسومية لتبدأ مع الخادم
-          echo "#!/bin/bash" > ~/.vnc/xstartup
-          echo "startxfce4 &" >> ~/.vnc/xstartup
-          chmod +x ~/.vnc/xstartup
-          
-          # تشغيل السيرفر الرسومي على بورت 5901 الافتراضي
-          vncserver :1 -geometry 1280x720 -depth 24
+          Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+          Expand-Archive ngrok.zip -DestinationPath .
+          ./ngrok.exe authtoken 3HsecokauoLiz6v7IorOCjlLMiH_3X9RgTfCZzkf1YCehKHHy
 
-      - name: 2. Setup noVNC Web Interface
+      - name: 2. Setup RDP Access
         run: |
-          # جلب أداة تحويل الـ VNC إلى رابط ويب للمتصفح
-          git clone https://github.com/novnc/noVNC.git ~/noVNC
-          git clone https://github.com/novnc/websockify ~/noVNC/utils/websockify
-          # تشغيل محول الويب على بورت 6080 بالخلفية
-          nohup ~/noVNC/utils/launch.sh --vnc localhost:5901 --listen 6080 > /dev/null 2>&1 &
-          sleep 5
+          # إنشاء حساب الآدمن وتفعيله بنجاح
+          net user Skinz KingStrongPassword123 /add
+          net localgroup administrators Skinz /add
+          
+          # تفعيل بورت الـ RDP وتخطي جدار الحماية بالكامل
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: 3. Connect to Ngrok Tunnel
+      - name: 3. Start Tunnel & Keep-Alive
         run: |
-          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip
-          unzip ngrok-stable-linux-amd64.zip
-          chmod +x ./ngrok
-          ./ngrok authtoken 3HsecokauoLiz6v7IorOCjlLMiH_3X9RgTfCZzkf1YCehKHHy
-
-      - name: 4. Launch Web Link & Keep-Alive (6 Hours)
-        run: |
-          # تمرير بورت الويب 6080 عبر نفق Ngrok بنظام HTTP
-          nohup ./ngrok http 6080 > /dev/null 2>&1 &
+          # تشغيل النفق المباشر لبورت الـ RDP الافتراضي 3389
+          Start-Process ./ngrok.exe -ArgumentList "tcp 3389"
           echo "=========================================================="
-          echo "🐧 LIGHTWEIGHT LINUX WEB PC IS READY 🐧"
-          echo "=========================================================="
-          echo "1) Go to your Ngrok Dashboard -> Endpoints."
-          echo "2) Copy the HTTP link generated there (e.g., https://xxx.ngrok-free.app)"
-          echo "3) Open the link directly in your phone's browser!"
-          echo "4) If it asks for a VNC password, type: King123"
+          echo "🔥 SERVER IS RUNNING STRONG 🔥"
           echo "=========================================================="
           
-          duration=21600
-          elapsed=0
-          while [ $elapsed -lt $duration ]; do
-              echo "Linux Web Server Status: Active... ($elapsed / $duration seconds)"
-              sleep 60
-              elapsed=$((elapsed + 60))
-          done
+          # سكريبت الحماية لضمان استمرار السيرفر لـ 6 ساعات
+          $total_seconds = 21600
+          $elapsed = 0
+          while ($elapsed -lt $total_seconds) {
+              echo "Server Status: Active... ($elapsed / $total_seconds seconds)"
+              Start-Sleep -Seconds 60
+              $elapsed += 60
+          }
