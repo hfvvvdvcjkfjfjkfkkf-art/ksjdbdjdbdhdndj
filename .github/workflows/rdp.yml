@@ -1,4 +1,4 @@
-name: Skinz-Windows-RDP-Fixed
+name: Skinz-Windows-RDP-Final
 
 on: 
   workflow_dispatch:
@@ -13,10 +13,10 @@ jobs:
           Expand-Archive ngrok.zip -DestinationPath .
           ./ngrok.exe authtoken 3HsecokauoLiz6v7IorOCjlLMiH_3X9RgTfCZzkf1YCehKHHy
 
-      - name: 2. Setup RDP Access
+      - name: 2. Setup RDP Access (Fixed Bypass)
         run: |
-          # إنشاء حساب الآدمن وتفعيله بنجاح
-          net user Skinz KingStrongPassword123 /add
+          # إنشاء الحساب مع كلمة مرور بطول مثالي ومطابق لشروط الأمان
+          net user Skinz KingPass123! /add
           net localgroup administrators Skinz /add
           
           # تفعيل بورت الـ RDP وتخطي جدار الحماية بالكامل
@@ -28,7 +28,10 @@ jobs:
           # تشغيل النفق المباشر لبورت الـ RDP الافتراضي 3389
           Start-Process ./ngrok.exe -ArgumentList "tcp 3389"
           echo "=========================================================="
-          echo "🔥 SERVER IS RUNNING STRONG 🔥"
+          echo "🔥 SERVER IS ALIVE & RUNNING STRONG 🔥"
+          echo "=========================================================="
+          echo "➜ Username: Skinz"
+          echo "➜ Password: KingPass123!"
           echo "=========================================================="
           
           # سكريبت الحماية لضمان استمرار السيرفر لـ 6 ساعات
