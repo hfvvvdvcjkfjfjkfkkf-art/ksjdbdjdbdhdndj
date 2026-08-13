@@ -1,0 +1,56 @@
+name: Skinz-Ultra-Lightweight-Linux
+
+on: 
+  workflow_dispatch: # تشغيل يدوي بضغطة زر
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # تشغيل بيئة لينكس فائقة السرعة والخفة
+    steps:
+      - name: 1. Install Desktop Environment & RDP (XRDP)
+        run: |
+          sudo apt update
+          # تثبيت واجهة XFCE الخفيفة جداً والمخصصة للأجهزة الضعيفة والهواتف
+          sudo apt install xfce4 xfce4-goodies xrdp -y
+          # إعداد نظام الواجهة ليعمل مع حساب السيرفر تلقائياً
+          echo "xfce4-session" > ~/.xsession
+          sudo systemctl enable xrdp
+          sudo systemctl start xrdp
+
+      - name: 2. Configure High-Privilege User & Password
+        run: |
+          # تغيير كلمة مرور مستخدم السيرفر الحالي لتدخل بها
+          echo "ubuntu:KingStrongPassword123" | sudo chpasswd
+          # تثبيت متصفح جوجل كروم وبيئة بايثون ليكون كل شيء جاهزاً
+          sudo apt install chromium-browser python3 python3-pip -y
+
+      - name: 3. Download and Configure Ngrok
+        run: |
+          # تحميل أداة Ngrok المخصصة لنظام لينكس 64-بت
+          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip
+          unzip ngrok-stable-linux-amd64.zip
+          chmod +x ./ngrok
+          # تفعيل التوكن الخاص بك تلقائياً
+          ./ngrok authtoken 3HsecokauoLiz6v7IorOCjlLMiH_3X9RgTfCZzkf1YCehKHHy
+
+      - name: 4. Launch Lightweight Session & Keep-Alive (6 Hours)
+        run: |
+          # تشغيل نفق الاتصال لبروتوكول الـ RDP عبر بورت 3389 الافتراضي
+          nohup ./ngrok tcp 3389 > /dev/null 2>&1 &
+          echo "=========================================================="
+          echo "🐧 LIGHTWEIGHT LINUX PC IS ALIVE & READY 🐧"
+          echo "=========================================================="
+          echo "1) Go to your Ngrok Dashboard -> Endpoints to get your IP."
+          echo "2) Connect using your mobile RDP App with these credentials:"
+          echo "   ➜ Username: ubuntu"
+          echo "   ➜ Password: KingStrongPassword123"
+          echo "=========================================================="
+          
+          # سكريبت النبضات الذكي لإبقاء سيرفر لينكس شغالاً لـ 6 ساعات متواصلة وجهازك مغلق
+          duration=21600
+          elapsed=0
+          while [ $elapsed -lt $duration ]; do
+              echo "Linux Server Status: Active and Running Strong... ($elapsed / $duration seconds)"
+              sleep 60
+              elapsed=$((elapsed + 60))
+          done
